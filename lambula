@@ -1,0 +1,77 @@
+#include <iostream>
+#include <chrono>
+#include <random>
+#include <vector>
+using namespace std;
+
+int partition(vector<int>& arr, int low, int high) {
+    int pivot = arr[low];
+    int left = high;
+    int right = low;
+
+    while (right < left) {
+        do {
+            right++;
+        } while (arr[right] <= pivot && right < high);
+
+        do {
+            left--;
+        } while (arr[left] > pivot && left > low);
+
+        if (right < left) {
+            int temp = arr[left];
+            arr[left] = arr[right];
+            arr[right] = temp;
+        }
+    }
+
+    int temp = arr[low];
+    arr[low] = arr[left];
+    arr[left] = temp;
+    return left;
+}
+
+void quickSort(vector<int>& arr, int low, int high) {
+    if (low < high) {
+        int piv = partition(arr, low, high);
+        quickSort(arr, low, piv);
+        quickSort(arr, piv + 1, high);
+    }
+}
+
+int main() {
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<int> dist(1, 10000);
+
+    int timee = 1000;
+
+    for (unsigned size = 1; size <= 5000; size = (size <= 10) ? size + 1 : size + 100) {
+        if (size > 5000) {
+            size = 5000;
+        }
+
+        chrono::nanoseconds total(0);
+
+        for (int times = 0; times < timee; times++) {
+            vector<int> arr(size);
+
+            for (unsigned j = 0; j < size; j++) {
+                arr[j] = dist(gen);
+            }
+
+            auto start = chrono::steady_clock::now();
+            quickSort(arr, 0, size - 1);
+            auto end = chrono::steady_clock::now();
+
+            chrono::nanoseconds time_taken = chrono::duration_cast<chrono::nanoseconds>(end - start);
+            total += time_taken;
+        }
+
+        total /= timee;
+
+        cout << size << "time " << total.count() << endl;
+    }
+
+    return 0;
+}
